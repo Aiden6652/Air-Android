@@ -311,7 +311,8 @@ public class JREUtils {
         // Has to run after SDL env vars are set
         try {
             Os.setenv("SDL_OPENGL_LIBRARY", graphicsLib, true);
-            Os.setenv("SDL_EGL_LIBRARY", NATIVE_LIB_DIR+"/"+Os.getenv("POJAVEXEC_EGL"), true);
+            if (Os.getenv("POJAVEXEC_EGL") != null)
+                Os.setenv("SDL_EGL_LIBRARY", NATIVE_LIB_DIR+"/"+Os.getenv("POJAVEXEC_EGL"), true);
         } catch (ErrnoException e) {
             Log.wtf("RENDER_LIBRARY", "Failed to load set SDL env vars");
         }
