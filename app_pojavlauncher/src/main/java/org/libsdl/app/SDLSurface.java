@@ -31,6 +31,7 @@ import android.view.WindowManager;
 import android.view.ScaleGestureDetector;
 
 import net.kdt.pojavlaunch.Tools;
+import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 
 /**
     SDLSurface. This is what we draw on, so we need to know when it's created
@@ -78,9 +79,14 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         setOnGenericMotionListener(SDLActivity.getMotionListener());
 
-        // Some arbitrary defaults to avoid a potential division by zero
-        mWidth = 1.0f;
-        mHeight = 1.0f;
+//        // Some arbitrary defaults to avoid a potential division by zero
+//        mWidth = 1.0f;
+//        mHeight = 1.0f;
+        // These values are used in calculating the position of inputs. SDL's scaling is independent
+        // of those, it only cares about the actual native surface resolution. Logical rendering
+        // resolution is set via SDL_SetRenderLogicalPresentation, not here.
+        mWidth = Tools.currentDisplayMetrics.widthPixels;
+        mHeight = Tools.currentDisplayMetrics.heightPixels;
 
         mIsSurfaceReady = false;
     }
@@ -105,6 +111,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
     public static void setNativeSurface(Surface nativeSurface) {
         mNativeSurface = nativeSurface;
+        SDLActivity.getSDLSurface().surfaceCreated(null);
     }
 
     // Called when we have a valid drawing surface
@@ -162,7 +169,9 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             // In case we're waiting on a size change after going fullscreen, send a notification.
             SDLActivity.getContext().notifyAll();
         }
-
+        // We must always be full screen because SDL uses a different mechanism for downscaling.
+        // TODO: Add resolution slider support for SDL via SDL_SetRenderLogicalPresentation
+        LauncherPreferences.PREF_SCALE_FACTOR = 1f;
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
         SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, mDisplay.getRefreshRate());
