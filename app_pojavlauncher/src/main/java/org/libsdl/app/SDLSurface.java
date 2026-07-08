@@ -279,75 +279,78 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
-    // Touch events
+    /** We process touch events in MinecraftGLSurface. Not here.**/
+
+//    // Touch events
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        /* Ref: http://developer.android.com/training/gestures/multi.html */
-        int touchDevId = event.getDeviceId();
-        final int pointerCount = event.getPointerCount();
-        int action = event.getActionMasked();
-        int pointerId;
-        int i = 0;
-        float x,y,p;
-
-        if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_POINTER_DOWN)
-            i = event.getActionIndex();
-
-        do {
-            int toolType = event.getToolType(i);
-
-            if (toolType == MotionEvent.TOOL_TYPE_MOUSE) {
-                int buttonState = event.getButtonState();
-                boolean relative = false;
-
-                // We need to check if we're in relative mouse mode and get the axis offset rather than the x/y values
-                // if we are. We'll leverage our existing mouse motion listener
-                SDLGenericMotionListener_API14 motionListener = SDLActivity.getMotionListener();
-                x = motionListener.getEventX(event, i);
-                y = motionListener.getEventY(event, i);
-                relative = motionListener.inRelativeMode();
-
-                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);
-            } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
-                pointerId = event.getPointerId(i);
-                x = event.getX(i);
-                y = event.getY(i);
-                p = event.getPressure(i);
-                if (p > 1.0f) {
-                    // may be larger than 1.0f on some devices
-                    // see the documentation of getPressure(i)
-                    p = 1.0f;
-                }
-
-                // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
-                int buttonState = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
-                if ((event.getButtonState() & MotionEvent.BUTTON_TERTIARY) != 0) {
-                    buttonState |= 0x08;
-                }
-
-                SDLActivity.onNativePen(pointerId, SDLActivity.getMotionListener().getPenDeviceType(event.getDevice()), buttonState, action, x, y, p);
-            } else { // MotionEvent.TOOL_TYPE_FINGER or MotionEvent.TOOL_TYPE_UNKNOWN
-                pointerId = event.getPointerId(i);
-                x = getNormalizedX(event.getX(i));
-                y = getNormalizedY(event.getY(i));
-                p = event.getPressure(i);
-                if (p > 1.0f) {
-                    // may be larger than 1.0f on some devices
-                    // see the documentation of getPressure(i)
-                    p = 1.0f;
-                }
-
-                SDLActivity.onNativeTouch(touchDevId, pointerId, action, x, y, p);
-            }
-
-            // Non-primary up/down
-            if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_POINTER_DOWN)
-                break;
-        } while (++i < pointerCount);
-
-        scaleGestureDetector.onTouchEvent(event);
-
-        return true;
+//        /* Ref: http://developer.android.com/training/gestures/multi.html */
+//        int touchDevId = event.getDeviceId();
+//        final int pointerCount = event.getPointerCount();
+//        int action = event.getActionMasked();
+//        int pointerId;
+//        int i = 0;
+//        float x,y,p;
+//
+//        if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_POINTER_DOWN)
+//            i = event.getActionIndex();
+//
+//        do {
+//            int toolType = event.getToolType(i);
+//
+//            if (toolType == MotionEvent.TOOL_TYPE_MOUSE) {
+//                int buttonState = event.getButtonState();
+//                boolean relative = false;
+//
+//                // We need to check if we're in relative mouse mode and get the axis offset rather than the x/y values
+//                // if we are. We'll leverage our existing mouse motion listener
+//                SDLGenericMotionListener_API14 motionListener = SDLActivity.getMotionListener();
+//                x = motionListener.getEventX(event, i);
+//                y = motionListener.getEventY(event, i);
+//                relative = motionListener.inRelativeMode();
+//
+//                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);
+//            } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
+//                pointerId = event.getPointerId(i);
+//                x = event.getX(i);
+//                y = event.getY(i);
+//                p = event.getPressure(i);
+//                if (p > 1.0f) {
+//                    // may be larger than 1.0f on some devices
+//                    // see the documentation of getPressure(i)
+//                    p = 1.0f;
+//                }
+//
+//                // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
+//                int buttonState = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
+//                if ((event.getButtonState() & MotionEvent.BUTTON_TERTIARY) != 0) {
+//                    buttonState |= 0x08;
+//                }
+//
+//                SDLActivity.onNativePen(pointerId, SDLActivity.getMotionListener().getPenDeviceType(event.getDevice()), buttonState, action, x, y, p);
+//            } else { // MotionEvent.TOOL_TYPE_FINGER or MotionEvent.TOOL_TYPE_UNKNOWN
+//                pointerId = event.getPointerId(i);
+//                x = getNormalizedX(event.getX(i));
+//                y = getNormalizedY(event.getY(i));
+//                p = event.getPressure(i);
+//                if (p > 1.0f) {
+//                    // may be larger than 1.0f on some devices
+//                    // see the documentation of getPressure(i)
+//                    p = 1.0f;
+//                }
+//
+//                SDLActivity.onNativeTouch(touchDevId, pointerId, action, x, y, p);
+//            }
+//
+//            // Non-primary up/down
+//            if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_POINTER_DOWN)
+//                break;
+//        } while (++i < pointerCount);
+//
+//        scaleGestureDetector.onTouchEvent(event);
+//
+//        return true;
+        return false;
     }
 
     // Sensor events
