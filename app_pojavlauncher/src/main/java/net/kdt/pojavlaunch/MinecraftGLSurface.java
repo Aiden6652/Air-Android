@@ -132,8 +132,13 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
         if(Tools.isAndroid8OrHigher()) setUpPointerCapture(touchpad);
         mInGUIProcessor.setAbstractTouchpad(touchpad);
         // Kopper Zink has orientation issues on SurfaceView
+        // Angelica has some rendering issues if you tab out on SurfaceView in LWJGL3ify 2.x
+        // FIXME: LWJGL3ify 3.x does not like when surface randomly dies on SurfaceView
+        // (it doesnt swap to 1x1 pbuffer cause it uses sdl for swap instead of glfw)
         try {
-            useSurfaceView = useSurfaceView && !LOCAL_RENDERER.equals("opengles3_desktopgl_zink_kopper");
+            useSurfaceView = useSurfaceView && !LOCAL_RENDERER.equals("opengles3_desktopgl_zink_kopper") &&
+                    !Tools.hasMods("angelica") &&
+                    !Tools.hasMods("lwjgl3ify-3");
         } catch (NullPointerException ignored){}
         if(useSurfaceView){
             SurfaceView surfaceView = new SurfaceView(getContext());
