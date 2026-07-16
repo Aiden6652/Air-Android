@@ -230,6 +230,7 @@ public class EfficientAndroidLWJGLKeycode {
         return sAndroidKeycodes[sLwjglKeycodesReversed[lwjglGlfwKeycode]];
     }
 
+    private static final char[] buffer = new char[1];
     /**
      * Takes a char and returns equivalent android keycode.
      * <p>
@@ -237,7 +238,11 @@ public class EfficientAndroidLWJGLKeycode {
      * @param c char primitive
      */
     public static int getAndroidKeycode(char c){
-        return mKcm.getDisplayLabel(c);
+        buffer[0] = c;
+        KeyEvent[] events = mKcm.getEvents(buffer);
+        return events != null && events.length > 0
+                ? events[0].getKeyCode()
+                : KeyEvent.KEYCODE_UNKNOWN;
     }
 
     public static short getValueByIndex(int index) {
