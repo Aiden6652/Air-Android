@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 typedef bool (*SDL_InitSubSystem_Func)(uint32_t);
+typedef bool (*SDL_SetHint)(const char *name, const char *value);
 
 static bool custom_SDL_InitSubSystem_Func(uint32_t flags) {
     // Call notifyLauncher on SDL_InitSubSystem, this sets up all the JNI stuff needed by SDL.
@@ -29,6 +30,14 @@ static bool custom_SDL_InitSubSystem_Func(uint32_t flags) {
     (*dvm_env)->SetIntArrayRegion(dvm_env, actionArray, 0, 2, action);
     jboolean result = (*dvm_env)->CallStaticBooleanMethod(dvm_env, pojav_environ->bridgeClazz,
             pojav_environ->method_notifyLauncher, type, actionArray);
+
+    // This is the normal for the launcher, the default in SDL is false.
+    SDL_SetHint SDL_SetHint_ptr = (SDL_SetHint)dlsym(RTLD_DEFAULT, "SDL_SetHint");
+    if (SDL_SetHint_ptr) {
+        SDL_SetHint_ptr("SDL_RETURN_KEY_HIDES_IME", "true");
+    } else {
+        LOGE("Failed to find SDL_SetHint to copy expected keyboard logic for SDL");
+    }
 
     // Call original func after doing all the needed setup
     bool r = BYTEHOOK_CALL_PREV(custom_SDL_InitSubSystem_Func, SDL_InitSubSystem_Func, flags);

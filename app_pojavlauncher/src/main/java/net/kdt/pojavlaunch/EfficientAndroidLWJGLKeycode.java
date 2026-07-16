@@ -227,6 +227,8 @@ public class EfficientAndroidLWJGLKeycode {
      * @param lwjglGlfwKeycode A GLFW key code macro (e.g., {@link LwjglGlfwKeycode#GLFW_KEY_W}).
      */
     public static int getAndroidKeycode(int lwjglGlfwKeycode){
+        if (lwjglGlfwKeycode == LwjglGlfwKeycode.GLFW_KEY_2) return KeyEvent.KEYCODE_2;
+        if (lwjglGlfwKeycode == LwjglGlfwKeycode.GLFW_KEY_3) return KeyEvent.KEYCODE_3;
         return sAndroidKeycodes[sLwjglKeycodesReversed[lwjglGlfwKeycode]];
     }
 

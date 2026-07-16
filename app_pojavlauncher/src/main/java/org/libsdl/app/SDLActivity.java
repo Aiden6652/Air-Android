@@ -5,6 +5,9 @@
 
 package org.libsdl.app;
 
+import static android.text.InputType.TYPE_CLASS_TEXT;
+import static android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -54,6 +57,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.kdt.pojavlaunch.MainActivity;
 import net.kdt.pojavlaunch.MinecraftGLSurface;
 
 import java.io.FileNotFoundException;
@@ -377,6 +381,37 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected SDLSurface createSDLSurface(Context context) {
         return new SDLSurface(context);
     }
+
+    public static boolean isUsingSDLTextEdit(){
+        return mTextEdit != null;
+    }
+    public static void enableSDLEditKeyboard(){
+        if (mTextEdit == null) return;
+
+        mTextEdit.setInputType(TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_NORMAL);
+
+        mTextEdit.setVisibility(View.VISIBLE);
+        mTextEdit.requestFocus();
+
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(mTextEdit, 0);
+
+        if (imm.isAcceptingText()) {
+            onNativeScreenKeyboardShown();
+        }
+    }
+    public static void disableSDLEditKeyboard(){
+        mTextEdit.setLayoutParams(new FrameLayout.LayoutParams(0, 0));
+
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
+
+        onNativeScreenKeyboardHidden();
+
+        mSurface.requestFocus();
+    }
+
+
 
     // Setup
     @SuppressLint("MissingSuperCall")
@@ -962,38 +997,38 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
                 break;
             case COMMAND_CHANGE_WINDOW_STYLE:
-                if (mSingleton != null) {
-                    Window window = mSingleton.getWindow();
-                    if (window != null) {
-                        if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
-                            int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                            SDLActivity.mFullscreenModeActive = true;
-                        } else {
-                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                            SDLActivity.mFullscreenModeActive = false;
-                        }
-                        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
-                            window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                        }
-                        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */ &&
-                            Build.VERSION.SDK_INT < 35 /* Android 15 */) {
-                            SDLActivity.onNativeInsetsChanged(0, 0, 0, 0);
-                        }
-                    }
-                } else {
-                    Log.e(TAG, "error handling message, getContext() returned no Activity");
-                }
+//                if (mSingleton != null) {
+//                    Window window = mSingleton.getWindow();
+//                    if (window != null) {
+//                        if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
+//                            int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
+//                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+//                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+//                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+//                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+//                                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
+//                            window.getDecorView().setSystemUiVisibility(flags);
+//                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//                            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+//                            SDLActivity.mFullscreenModeActive = true;
+//                        } else {
+//                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
+//                            window.getDecorView().setSystemUiVisibility(flags);
+//                            window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+//                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//                            SDLActivity.mFullscreenModeActive = false;
+//                        }
+//                        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+//                            window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+//                        }
+//                        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */ &&
+//                            Build.VERSION.SDK_INT < 35 /* Android 15 */) {
+//                            SDLActivity.onNativeInsetsChanged(0, 0, 0, 0);
+//                        }
+//                    }
+//                } else {
+//                    Log.e(TAG, "error handling message, getContext() returned no Activity");
+//                }
                 break;
             case COMMAND_TEXTEDIT_HIDE:
                 if (mTextEdit != null) {
