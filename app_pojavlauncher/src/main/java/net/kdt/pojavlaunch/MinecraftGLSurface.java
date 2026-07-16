@@ -442,21 +442,14 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
         }
         int newWidth;
         int newHeight;
-        if (sdlEnabled) {
-            // We don't support windows that aren't stretched to fullscreen, but SDL has a different
-            // way of handling changing res, that is via SDL_SetRenderLogicalPresentation
-            newWidth = getWidth();
-            newHeight = getHeight();
-        } else {
-            // Use the width and height of the View instead of display dimensions to avoid
-            // getting squiched/stretched due to inconsistencies between the layout and
-            // screen dimensions.
-            newWidth = Tools.getDisplayFriendlyRes(getWidth(), LauncherPreferences.PREF_SCALE_FACTOR);
-            newHeight = Tools.getDisplayFriendlyRes(getHeight(), LauncherPreferences.PREF_SCALE_FACTOR);
-            if (newHeight < 1 || newWidth < 1) {
-                Log.e("MGLSurface", String.format("Impossible resolution : %dx%d", newWidth, newHeight));
-                return;
-            }
+        // Use the width and height of the View instead of display dimensions to avoid
+        // getting squiched/stretched due to inconsistencies between the layout and
+        // screen dimensions.
+        newWidth = Tools.getDisplayFriendlyRes(getWidth(), LauncherPreferences.PREF_SCALE_FACTOR);
+        newHeight = Tools.getDisplayFriendlyRes(getHeight(), LauncherPreferences.PREF_SCALE_FACTOR);
+        if (newHeight < 1 || newWidth < 1) {
+            Log.e("MGLSurface", String.format("Impossible resolution : %dx%d", newWidth, newHeight));
+            return;
         }
         windowWidth = newWidth;
         windowHeight = newHeight;
@@ -475,6 +468,7 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
                 view.getSurfaceTexture().setDefaultBufferSize(windowWidth, windowHeight);
             }
         }
+        if (sdlEnabled) SDLActivity.getSDLSurface().nativeResize(windowWidth, windowHeight);
 
         CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight);
     }

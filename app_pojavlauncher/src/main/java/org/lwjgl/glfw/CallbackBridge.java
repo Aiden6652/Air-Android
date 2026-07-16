@@ -235,7 +235,7 @@ public class CallbackBridge {
                     MinecraftGLSurface.sdlEnabled = true;
                     if (SDLActivity.getSDLSurface() != null) {
                         // Notifies SDL of native surface res which is needed for proper input handling
-                        SDLActivity.getSDLSurface().surfaceChanged();
+                        SDLActivity.getSDLSurface().nativeResize(windowWidth, windowHeight);
                     }
                     Logger.appendToLog("Amethyst-Android: SDL support enabled!");
                     return true;

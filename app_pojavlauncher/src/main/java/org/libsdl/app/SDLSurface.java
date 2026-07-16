@@ -6,6 +6,9 @@
 package org.libsdl.app;
 
 
+import static org.lwjgl.glfw.CallbackBridge.windowHeight;
+import static org.lwjgl.glfw.CallbackBridge.windowWidth;
+
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Insets;
@@ -30,6 +33,7 @@ import android.view.WindowManager;
 
 import android.view.ScaleGestureDetector;
 
+import net.kdt.pojavlaunch.MinecraftGLSurface;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.prefs.LauncherPreferences;
 
@@ -117,6 +121,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     // Called when we have a valid drawing surface
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        if (!MinecraftGLSurface.sdlEnabled) return;
         Log.v("SDL", "surfaceCreated()");
         SDLActivity.onNativeSurfaceCreated();
     }
@@ -124,6 +129,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     // Called when we lose the surface
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        if (!MinecraftGLSurface.sdlEnabled) return;
         Log.v("SDL", "surfaceDestroyed()");
 
         // Transition to pause, if needed
@@ -143,6 +149,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public void surfaceChanged(SurfaceHolder holder,
                                int format, int width, int height) {
+        if (!MinecraftGLSurface.sdlEnabled) return;
         Log.v("SDL", "surfaceChanged()");
 
         if (SDLActivity.mSingleton == null) {
@@ -169,14 +176,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             // In case we're waiting on a size change after going fullscreen, send a notification.
             SDLActivity.getContext().notifyAll();
         }
-        // We must always be full screen because SDL uses a different mechanism for downscaling.
-        // TODO: Add resolution slider support for SDL via SDL_SetRenderLogicalPresentation
-        LauncherPreferences.PREF_SCALE_FACTOR = 1f;
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
-        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, mDisplay.getRefreshRate());
-        SDLActivity.onNativeResize();
-
         // Prevent a screen distortion glitch,
         // for instance when the device is in Landscape and a Portrait App is resumed.
         boolean skip = false;
@@ -224,6 +225,13 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         SDLActivity.mNextNativeState = SDLActivity.NativeState.RESUMED;
         SDLActivity.handleNativeState();
+    }
+
+    public void nativeResize(int w, int h){
+        DisplayMetrics realMetrics = new DisplayMetrics();
+        mDisplay.getRealMetrics( realMetrics );
+        SDLActivity.nativeSetScreenResolution(w, h, w, h, (float)realMetrics.densityDpi / 160.0f, mDisplay.getRefreshRate());
+        SDLActivity.onNativeResize();
     }
 
     // Window inset
