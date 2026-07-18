@@ -8,6 +8,7 @@ import android.content.*;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Choreographer;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import androidx.annotation.Keep;
@@ -93,6 +94,13 @@ public class CallbackBridge {
         if(isDown){
             SDLActivity.onNativeKeyDown(EfficientAndroidLWJGLKeycode.getAndroidKeycode(keycode));
         } else SDLActivity.onNativeKeyUp(EfficientAndroidLWJGLKeycode.getAndroidKeycode(keycode));
+        // If not in GUI and pressed a hotbar key, update HotbarView's last index for gesture
+        // detection. This is still faulty but should be less so.
+        if (isGrabbing()){
+            if (keycode >= LwjglGlfwKeycode.GLFW_KEY_0 && keycode <= LwjglGlfwKeycode.GLFW_KEY_9){
+                ((MainActivity) SDLActivity.getContext()).setmLastIndex(keycode - LwjglGlfwKeycode.GLFW_KEY_0);
+            }
+        }
     }
 
     public static void sendChar(char keychar, int modifiers){
