@@ -17,6 +17,7 @@ LOCAL_LDLIBS := -ldl -llog -landroid
 LOCAL_MODULE := pojavexec
 # LOCAL_CFLAGS += -DDEBUG
 # -DGLES_TEST
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 LOCAL_SRC_FILES := \
     bigcoreaffinity.c \
     egl_bridge.c \
@@ -45,6 +46,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := exithook
 LOCAL_LDLIBS := -ldl -llog
 LOCAL_SHARED_LIBRARIES := bytehook pojavexec
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 LOCAL_SRC_FILES := \
     native_hooks/exit_hook.c \
     native_hooks/chmod_hook.c \

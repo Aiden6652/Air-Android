@@ -211,10 +211,11 @@ public class CallbackBridge {
     }
 
     // Notification types
-    private static final int SDL = 0;
+    private static final int NOTIF_TYPE_SDL = 0;
 
     // Notification actions
-    private static final int INIT = 0;
+    private static final int ACTION_INIT_LAUNCHER_INTEGRATION = 0;
+    private static final int ACTION_SEND_TEXTBOX_RECT = 1;
     /**
      * Used for any sort of notification that needs to be given from the JRE side
      * @return if notification successful
@@ -224,22 +225,30 @@ public class CallbackBridge {
     @Keep
     public static boolean notifyLauncher(int type, int... action) {
         switch (type) {
-            case SDL:
-                if (action[0] == INIT) {
-                    // We need to load this ourselves because some mods skip loading it due to
-                    // broken logic somewhere.
-                    System.loadLibrary("SDL3");
-                    System.loadLibrary("SDL2");
-                    org.libsdl.app.SDL.setupJNI();
-                    onDirectInputEnable();
-                    MinecraftGLSurface.sdlEnabled = true;
-                    if (SDLActivity.getSDLSurface() != null) {
-                        // Notifies SDL of native surface res which is needed for proper input handling
-                        SDLActivity.getSDLSurface().nativeResize(windowWidth, windowHeight);
+            case NOTIF_TYPE_SDL:
+                if (action[0] == ACTION_INIT_LAUNCHER_INTEGRATION) {
+                    try {
+                        // We need to load this ourselves because some mods skip loading it due to
+                        // broken logic somewhere.
+                        System.loadLibrary("SDL3");
+                        System.loadLibrary("SDL2");
+                        org.libsdl.app.SDL.setupJNI();
+                        onDirectInputEnable();
+                        MinecraftGLSurface.sdlEnabled = true;
+                        if (SDLActivity.getSDLSurface() != null) {
+                            // Notifies SDL of native surface res which is needed for proper input handling
+                            SDLActivity.getSDLSurface().nativeResize(windowWidth, windowHeight);
+                        }
+                        Logger.appendToLog("Amethyst-Android: SDL support enabled!");
+                        return true;
+                    } catch (Exception e){
+                        Logger.appendToLog("Amethyst-Android: Failed to initialize SDL launcher-side integration! We will likely crash");
                     }
-                    Logger.appendToLog("Amethyst-Android: SDL support enabled!");
-                    return true;
                 }
+                if (action[0] == ACTION_SEND_TEXTBOX_RECT) {
+                    // implement
+                }
+
         }
         return false;
     }
