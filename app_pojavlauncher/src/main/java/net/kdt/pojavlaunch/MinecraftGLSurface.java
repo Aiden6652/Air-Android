@@ -366,9 +366,11 @@ public class MinecraftGLSurface extends View implements GrabListener, DirectGame
         if(event.getDevice() != null
                 && ( (event.getSource() & InputDevice.SOURCE_MOUSE_RELATIVE) == InputDevice.SOURCE_MOUSE_RELATIVE
                 ||   (event.getSource() & InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE)  ){
-
             if(eventKeycode == KeyEvent.KEYCODE_BACK){
-                sendMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT, event.getAction() == KeyEvent.ACTION_DOWN);
+                sendMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_4, event.getAction() == KeyEvent.ACTION_DOWN);
+                return true;
+            }else if(eventKeycode == KeyEvent.KEYCODE_FORWARD){
+                sendMouseButton(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_5, event.getAction() == KeyEvent.ACTION_DOWN);
                 return true;
             }
         }
