@@ -146,10 +146,11 @@ public class CallbackBridge {
             case LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_MIDDLE:
                 aKey = MotionEvent.BUTTON_TERTIARY;
                 break;
-            case LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_4:
+            // Yes, back and forward are flipped, for some reason it's just flipped on SDL, don't ask
+            case LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_5:
                 aKey = MotionEvent.BUTTON_BACK;
                 break;
-            case LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_5:
+            case LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_4:
                 aKey = MotionEvent.BUTTON_FORWARD;
                 break;
         }
