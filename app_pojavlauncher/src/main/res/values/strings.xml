@@ -512,5 +512,6 @@
     <string name="select_lwjgl3ify_version">Select LWJGL3ify version</string>
     <string name="lwjgl3ify_installer_available_versions">Supported LWJGL3IFY versions</string>
     <string name="lwjgl3ify_installer_broken_versions">Broken LWJGL3ify versions (SDL)</string>
+    <string name="new_default_controls">Extracted new default controls into new_default.json. Try it out!</string>
 
 </resources>
