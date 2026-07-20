@@ -918,7 +918,7 @@ public final class Tools {
                 pathname.getName().endsWith(".jar") &&
                 // Exclude our three special jars which goes first, second and last
                 !pathname.getName().equals("lwjgl.jar") &&
-                !pathname.getName().equals("/lwjgl-"+internalLwjglVersion+"-merged-modules.jar") &&
+                !pathname.getName().equals("lwjgl-"+internalLwjglVersion+"-merged-modules.jar") &&
                 !pathname.getName().endsWith("lwjglx.jar"));
 
         if (lwjglModules != null) {
