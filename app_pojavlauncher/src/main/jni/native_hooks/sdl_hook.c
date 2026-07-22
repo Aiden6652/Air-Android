@@ -61,6 +61,8 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     // This is the normal for the launcher, the default in SDL is false.
     SET_DLSYM_PTR(SDL_SetHint);
     if (SDL_SetHint_p) SDL_SetHint_p("SDL_RETURN_KEY_HIDES_IME", "true");
+    // FIXME: idk why it wont srgb, sorry
+    SDL_SetHint_p("SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER", "0");
 
     // Call original func after doing all the needed setup
     bool r = BYTEHOOK_CALL_PREV(custom_SDL_InitSubSystem_Func, SDL_InitSubSystem_t, flags);
