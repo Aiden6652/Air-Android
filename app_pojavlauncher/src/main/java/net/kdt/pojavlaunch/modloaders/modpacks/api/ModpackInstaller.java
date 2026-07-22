@@ -90,8 +90,8 @@ public class ModpackInstaller {
         ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.import_modpack_start);
         String modrinthPackInfoFileName = "modrinth.index.json";
         String curseforgePackInfoFileName = "manifest.json";
-        InputStream inputStream = null;
-        inputStream = activity.getContentResolver().openInputStream(zipUri);
+        InputStream inputStream = activity.getContentResolver().openInputStream(zipUri);
+        if (inputStream == null) throw new IOException("Can't open modpack file, try again?");
         ZipInputStream zipInputStream = new ZipInputStream(inputStream);
         ZipEntry zipEntry;
         while ((zipEntry = zipInputStream.getNextEntry()) != null) {
@@ -109,6 +109,7 @@ public class ModpackInstaller {
 
             // Hash the ZIP File
             inputStream = activity.getContentResolver().openInputStream(zipUri);
+            if (inputStream == null) throw new IOException("Can't open modpack file, try again?");
             MessageDigest algorithm = MessageDigest.getInstance("SHA-1");
             DigestInputStream hashingStream = new DigestInputStream(inputStream, algorithm);
 
@@ -142,27 +143,32 @@ public class ModpackInstaller {
 
             // Parse the JSON to prepare for instance creation
             JsonObject packInfoJson = JsonParser.parseString(jsonString.toString()).getAsJsonObject();
-            String modpackName;
+            String modpackName = "";
+            String modpackVersion = "";
+            String modpackMcVersion = "";
             if(isModrinth){
-                // Added a for because there is an awkward __ that I can't be bothered to fix
-                // FO only deduplication be like:
-                modpackName = (packInfoJson.get("name").getAsString().toLowerCase(Locale.ROOT) +
-                        packInfoJson.get("versionId") + "for" +
-                        packInfoJson.get("dependencies").getAsJsonObject().get("minecraft"));
+                try {
+                    modpackName = packInfoJson.get("name").getAsString();
+                    modpackVersion = packInfoJson.get("versionId").getAsString();
+                    modpackMcVersion = packInfoJson.get("dependencies").getAsJsonObject().get("minecraft").getAsString();
+                } catch (RuntimeException ignored) {}
             } else {
-                modpackName = (packInfoJson.get("name").getAsString().toLowerCase(Locale.ROOT) +
-                        packInfoJson.get("version") + "for" +
-                        packInfoJson.get("minecraft").getAsJsonObject().get("version"));
+                try {
+                    modpackName = packInfoJson.get("name").getAsString();
+                    modpackVersion = packInfoJson.get("version").getAsString();
+                    modpackMcVersion = packInfoJson.get("minecraft").getAsJsonObject().get("version").getAsString();
+                } catch (RuntimeException ignored) {}
             }
-            modpackName = modpackName.trim().replaceAll("[\\\\/:*?\"<>| \\t\\n]", "_");
-            modpackName = modpackName + hash;
-
+            if(modpackName.isBlank() || modpackVersion.isBlank() || modpackMcVersion.isBlank()) throw new IOException("Corrupt Modpack manifest file.");
+            // Added a for because there is an awkward __ that I can't be bothered to fix
+            // FO only deduplication be like:
+            String profileFolderName = String.join(" ", modpackName, modpackVersion, "for", modpackMcVersion, hash);
+            profileFolderName = profileFolderName.trim().replaceAll("[\\\\/:*?\"<>| \\t\\n]", "_");
 
             // Copy ZIP file to cache
-            if(modpackName == null) throw new IOException("Corrupt Modpack manifest file.");
-            File modpackFile = null;
-            modpackFile = new File(Tools.DIR_CACHE, modpackName + ".cf");
+            File modpackFile = new File(Tools.DIR_CACHE, profileFolderName + ".cf");
             inputStream = activity.getContentResolver().openInputStream(zipUri);
+            if (inputStream == null) throw new IOException("Can't open modpack file, try again?");
             FileOutputStream output = new FileOutputStream(modpackFile);
             byte[] b = new byte[262144];
             int read;
@@ -176,22 +182,22 @@ public class ModpackInstaller {
                 ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, progress, R.string.import_modpack_copy, readMB, totalMB);
             }
             output.flush();
+            output.close();
 
             // Install the actual pack into custom_instances
-            ModLoader modLoaderInfo = installFunction.installModpack(modpackFile, new File(Tools.DIR_GAME_HOME, "custom_instances/"+modpackName));
+            ModLoader modLoaderInfo = installFunction.installModpack(modpackFile, new File(Tools.DIR_GAME_HOME, "custom_instances/"+profileFolderName));
             // We have to do this because installModpack doesn't clean up after itself
             ProgressLayout.clearProgress(ProgressLayout.INSTALL_MODPACK);
             modpackFile.delete();
-            if(modLoaderInfo == null) {
-                return null;
-            }
 
             // Create the instance (We don't have a picture guys)
-            MinecraftProfile profile = new MinecraftProfile();
-            profile.gameDir = "./custom_instances/" + modpackName;
-            profile.name = packInfoJson.get("name").getAsString();
-            profile.lastVersionId = modLoaderInfo.getVersionId();
-            LauncherProfiles.mainProfileJson.profiles.put(modpackName, profile);
+            MinecraftProfile profile = MinecraftProfile.getDefaultProfile();
+            profile.gameDir = "./custom_instances/" + profileFolderName;
+            profile.name = modpackName;
+            if (!modpackMcVersion.isBlank()) profile.lastVersionId = modpackMcVersion;
+            if (modLoaderInfo != null && modLoaderInfo.getVersionId() != null)
+                profile.lastVersionId = modLoaderInfo.getVersionId();
+            LauncherProfiles.mainProfileJson.profiles.put(profileFolderName, profile);
             LauncherProfiles.write();
 
             return modLoaderInfo;
