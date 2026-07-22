@@ -1,7 +1,9 @@
 package net.kdt.pojavlaunch.modloaders.modpacks.api;
 
 import android.app.Activity;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -85,6 +87,7 @@ public class ModpackInstaller {
     }
 
     public static ModLoader importModpack(Activity activity, Uri zipUri, InstallFunction installFunction) throws IOException, NoSuchAlgorithmException {
+        ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.import_modpack_start);
         String modrinthPackInfoFileName = "modrinth.index.json";
         String curseforgePackInfoFileName = "manifest.json";
         InputStream inputStream = null;
@@ -109,8 +112,24 @@ public class ModpackInstaller {
             MessageDigest algorithm = MessageDigest.getInstance("SHA-1");
             DigestInputStream hashingStream = new DigestInputStream(inputStream, algorithm);
 
-            byte[] buffer = new byte[8192];
-            while (hashingStream.read(buffer) != -1) {} // just read to update the digest
+            long fileSize = -1;
+            long readSize = 0;
+            try (Cursor returnCursor = activity.getContentResolver().query(zipUri, new String[]{OpenableColumns.SIZE}, null, null, null)) {
+                if (returnCursor != null && returnCursor.moveToFirst()) {
+                    fileSize = returnCursor.getLong(0);
+                }
+            }
+
+            byte[] buffer = new byte[262144];
+            while (true) {
+                int n = hashingStream.read(buffer);
+                if (n == -1) break;
+                readSize += n;
+                String readMB = fileSize > 0 ? String.format(Locale.US, "%.2f", readSize / (1024.0 * 1024.0)) : "unknown";
+                String totalMB = fileSize > 0 ? String.format(Locale.US, "%.2f",fileSize / (1024.0 * 1024.0)) : "unknown";
+                int progress = fileSize > 0 ? (int) ((readSize * 100L) / fileSize) : 0;
+                ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, progress, R.string.import_modpack_hash, readMB, totalMB);
+            }
             hashingStream.close();
             byte[] digest = algorithm.digest();
             StringBuilder sb = new StringBuilder(digest.length * 2);
@@ -118,6 +137,8 @@ public class ModpackInstaller {
                 sb.append(String.format("%02x", b));
             }
             String hash = sb.toString();
+
+            ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.import_modpack_json);
 
             // Parse the JSON to prepare for instance creation
             JsonObject packInfoJson = JsonParser.parseString(jsonString.toString()).getAsJsonObject();
@@ -136,16 +157,23 @@ public class ModpackInstaller {
             modpackName = modpackName.trim().replaceAll("[\\\\/:*?\"<>| \\t\\n]", "_");
             modpackName = modpackName + hash;
 
+
             // Copy ZIP file to cache
             if(modpackName == null) throw new IOException("Corrupt Modpack manifest file.");
             File modpackFile = null;
             modpackFile = new File(Tools.DIR_CACHE, modpackName + ".cf");
             inputStream = activity.getContentResolver().openInputStream(zipUri);
             FileOutputStream output = new FileOutputStream(modpackFile);
-            byte[] b = new byte[4 * 1024];
+            byte[] b = new byte[262144];
             int read;
+            int readTotal = 0;
             while ((read = inputStream.read(b)) != -1) {
                 output.write(b, 0, read);
+                readTotal += read;
+                String readMB = fileSize > 0 ? String.format(Locale.US, "%.2f", readTotal / (1024.0 * 1024.0)) : "unknown";
+                String totalMB = fileSize > 0 ? String.format(Locale.US, "%.2f", fileSize / (1024.0 * 1024.0)) : "unknown";
+                int progress = fileSize > 0 ? (int) ((readTotal * 100L) / fileSize) : 0;
+                ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, progress, R.string.import_modpack_copy, readMB, totalMB);
             }
             output.flush();
 

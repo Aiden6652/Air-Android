@@ -513,5 +513,9 @@
     <string name="lwjgl3ify_installer_available_versions">Supported LWJGL3IFY versions</string>
     <string name="lwjgl3ify_installer_broken_versions">Broken LWJGL3ify versions (SDL)</string>
     <string name="new_default_controls">Extracted new default controls into new_default.json. Try it out!</string>
+    <string name="import_modpack_start">Importing modpack…</string>
+    <string name="import_modpack_hash">Hashing modpack file… (%s MB/ %s MB)</string>
+    <string name="import_modpack_json">Reading modpack info…</string>
+    <string name="import_modpack_copy">Copying modpack file to cache… (%s MB/ %s MB)</string>
 
 </resources>
