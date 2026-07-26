@@ -159,24 +159,6 @@ public class LauncherActivity extends BaseActivity {
             ExtraCore.setValue(ExtraConstants.SELECT_AUTH_METHOD, true);
             return false;
         }
-        String normalizedVersionId = AsyncMinecraftDownloader.normalizeVersionId(prof.lastVersionId);
-        JMinecraftVersionList.Version mcVersion = AsyncMinecraftDownloader.getListedVersion(normalizedVersionId);
-
-        // Do not load when is a modded version or older than minecraft 1.3 on demo account
-        if (mAccountSpinner.getSelectedAccount().isDemo()) {
-            boolean isOlderThan13 = true;
-
-            if (mcVersion != null) {
-                try {
-                    isOlderThan13 = DateUtils.dateBefore(DateUtils.parseReleaseDate(mcVersion.releaseTime), 2012, 6, 22);
-                } catch (ParseException ignored) {}
-            }
-
-            if (isOlderThan13) {
-                hasNoOnlineProfileDialog(this, getString(R.string.global_error), getString(R.string.demo_versions_supported));
-                return false;
-            }
-        }
 
         // Override whatever version is in use and replace it with lwjgl3ify if needed
         List<File> lwjgl3ifyJars = getMods("lwjgl3ify-3");
@@ -215,6 +197,25 @@ public class LauncherActivity extends BaseActivity {
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+        }
+
+        String normalizedVersionId = AsyncMinecraftDownloader.normalizeVersionId(prof.lastVersionId);
+        JMinecraftVersionList.Version mcVersion = AsyncMinecraftDownloader.getListedVersion(normalizedVersionId);
+
+        // Do not load when is a modded version or older than minecraft 1.3 on demo account
+        if (mAccountSpinner.getSelectedAccount().isDemo()) {
+            boolean isOlderThan13 = true;
+
+            if (mcVersion != null) {
+                try {
+                    isOlderThan13 = DateUtils.dateBefore(DateUtils.parseReleaseDate(mcVersion.releaseTime), 2012, 6, 22);
+                } catch (ParseException ignored) {}
+            }
+
+            if (isOlderThan13) {
+                hasNoOnlineProfileDialog(this, getString(R.string.global_error), getString(R.string.demo_versions_supported));
+                return false;
             }
         }
 
