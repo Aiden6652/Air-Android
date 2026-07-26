@@ -10,41 +10,10 @@
 #include <jni.h>
 #include <stdlib.h>
 
-#define SET_DLSYM_PTR(fn) \
-    fn##_t fn##_p;              \
-    do { \
-        dlerror(); \
-        void *_p = dlsym(RTLD_NEXT, #fn); \
-        const char *_e = dlerror(); \
-        if (_e || !_p) { \
-            LOGE("dlsym(%s) failed: %s\n", #fn, _e ? _e : "unknown error"); \
-        } \
-        fn##_p = (typeof(fn##_t))_p; \
-    } while (0)
-
-#define DECL_DLSYM(fn) typedef typeof(&fn) fn##_t;
-
-#define TRY_ATTACH_ENV(fn) \
-    JNIEnv *dvm_env; \
-    dvm_env = get_attached_env(pojav_environ->dalvikJavaVMPtr); \
-    if (dvm_env == ((void *) 0)) {printf("%s notify to launcher-side integration failed!\n", #fn);}
-
-
 DECL_DLSYM(SDL_InitSubSystem)
 DECL_DLSYM(SDL_SetHint);
 DECL_DLSYM(SDL_SetTextInputArea);
-
-static bool notifyLauncher(JNIEnv *dvm_env, int type, int actions[], int len){
-    jintArray actionArray = (*dvm_env)->NewIntArray(dvm_env, len);
-    (*dvm_env)->SetIntArrayRegion(dvm_env, actionArray, 0, len, actions);
-    return (*dvm_env)->CallStaticBooleanMethod(dvm_env, pojav_environ->bridgeClazz,
-            pojav_environ->method_notifyLauncher, type, actionArray);
-}
-
-#define NOTIF_TYPE_SDL 0
-#define ACTION_INIT_LAUNCHER_INTEGRATION 0
-#define ACTION_SEND_TEXTBOX_RECT 1
-
+DECL_DLSYM(SDL_SetError);
 
 
 static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {

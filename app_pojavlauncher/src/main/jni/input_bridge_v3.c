@@ -32,14 +32,7 @@
 #define EVENT_TYPE_MOUSE_BUTTON 1006
 #define EVENT_TYPE_SCROLL 1007
 
-#define TRY_ATTACH_ENV(env_name, vm, error_message, then) JNIEnv* env_name;\
-do {                                                                       \
-    env_name = get_attached_env(vm);                                       \
-    if(env_name == NULL) {                                                 \
-        printf(error_message);                                             \
-        then                                                               \
-    }                                                                      \
-} while(0)
+
 
 static void registerFunctions(JNIEnv *env);
 
