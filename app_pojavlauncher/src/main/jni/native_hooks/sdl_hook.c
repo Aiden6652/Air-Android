@@ -18,7 +18,12 @@ DECL_DLSYM(SDL_SetError);
 
 static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     // Call notifyLauncher on SDL_InitSubSystem, this sets up all the JNI stuff needed by SDL.
-    TRY_ATTACH_ENV(SDL_InitSubSystem);
+    TRY_ATTACH_ENV(dvm_env, pojav_environ->dalvikJavaVMPtr, "SDL_InitSubSystem failed!",
+            SET_DLSYM_PTR(SDL_SetError);
+            if (SDL_SetError_p) SDL_SetError_p("Failed to load SDL launcher integration android-side. This is not an SDL bug, please contact the launcher developer.");
+            return false;
+            );
+
     // Just in case of bozo
     jint safeFlags;
     if (flags > INT32_MAX) {
