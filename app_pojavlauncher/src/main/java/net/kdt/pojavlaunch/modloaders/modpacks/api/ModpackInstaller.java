@@ -87,7 +87,7 @@ public class ModpackInstaller {
     }
 
     public static ModLoader importModpack(Activity activity, Uri zipUri, InstallFunction installFunction) throws IOException, NoSuchAlgorithmException {
-        ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 0, R.string.import_modpack_start);
+        ProgressLayout.setProgress(ProgressLayout.INSTALL_MODPACK, 1, R.string.import_modpack_start);
         String modrinthPackInfoFileName = "modrinth.index.json";
         String curseforgePackInfoFileName = "manifest.json";
         InputStream inputStream = activity.getContentResolver().openInputStream(zipUri);
