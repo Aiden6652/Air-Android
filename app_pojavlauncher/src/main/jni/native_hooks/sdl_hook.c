@@ -58,6 +58,7 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
 
 
 void create_sdl_hooks(bytehook_hook_all_t bytehook_hook_all_p) {
-    bytehook_stub_t stub_SDL_InitSubSystem = bytehook_hook_all_p("libSDL3.so", "SDL_InitSubSystem", &custom_SDL_InitSubSystem_Func, NULL, NULL);
+    // Don't set callee_path_name to anything besides NULL or else it won't be able to find the symbol
+    bytehook_stub_t stub_SDL_InitSubSystem = bytehook_hook_all_p(NULL, "SDL_InitSubSystem", &custom_SDL_InitSubSystem_Func, NULL, NULL);
     LOGI("Successfully initialized SDL hooks, stubs: %p, %p\n", stub_SDL_InitSubSystem);
 }
