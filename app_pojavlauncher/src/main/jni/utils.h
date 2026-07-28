@@ -13,16 +13,17 @@
 
 #define DECL_DLSYM(fn) typedef typeof(&fn) fn##_t;
 
-#define SET_DLSYM_PTR(fn) \
-    fn##_t fn##_p;              \
-    do { \
-        dlerror(); \
-        void *_p = dlsym(RTLD_NEXT, #fn); \
-        const char *_e = dlerror(); \
-        if (_e || !_p) { \
-            LOGE("dlsym(%s) failed: %s\n", #fn, _e ? _e : "unknown error"); \
-        } \
-        fn##_p = (typeof(fn##_t))_p; \
+#define SET_DLSYM_PTR(handle, fn)                     \
+    fn##_t fn##_p;                                   \
+    do {                                             \
+        dlerror();                                   \
+        void *_p = dlsym((handle), #fn);             \
+        const char *_e = dlerror();                  \
+        if (_e || !_p) {                             \
+            LOGE("dlsym(%s) failed: %s\n",           \
+                 #fn, _e ? _e : "unknown error");    \
+        }                                            \
+        fn##_p = (fn##_t)_p;                         \
     } while (0)
 
 #define TRY_ATTACH_ENV(env_name, vm, error_message, then) JNIEnv* env_name;\
