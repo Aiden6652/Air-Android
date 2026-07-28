@@ -19,7 +19,7 @@ DECL_DLSYM(SDL_SetError);
 static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     // Call notifyLauncher on SDL_InitSubSystem, this sets up all the JNI stuff needed by SDL.
     TRY_ATTACH_ENV(dvm_env, pojav_environ->dalvikJavaVMPtr, "SDL_InitSubSystem failed!",
-            SET_DLSYM_PTR(SDL_SetError);
+            SET_DLSYM_PTR(dlopen("libSDL3.so", RTLD_NOLOAD), SDL_SetError);
             if (SDL_SetError_p) SDL_SetError_p("Failed to load SDL launcher integration android-side. This is not an SDL bug, please contact the launcher developer.");
             return false;
             );
@@ -33,10 +33,13 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     notifyLauncher(dvm_env, NOTIF_TYPE_SDL, (int[]){ACTION_INIT_LAUNCHER_INTEGRATION, safeFlags}, 2);
 
     // This is the normal for the launcher, the default in SDL is false.
-    SET_DLSYM_PTR(SDL_SetHint);
+    SET_DLSYM_PTR(dlopen("libSDL3.so", RTLD_NOLOAD), SDL_SetHint);
     if (SDL_SetHint_p) SDL_SetHint_p("SDL_RETURN_KEY_HIDES_IME", "true");
-    // FIXME: idk why it wont srgb, sorry
-    SDL_SetHint_p("SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER", "0");
+    // FIXME: MobileGlues has issues with passing in the proper EGL params to make this work
+    const char *egl = getenv("POJAVEXEC_EGL");
+    if (egl && strcmp(egl, "libmobileglues.so") == 0) {
+        SDL_SetHint_p("SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER", "0");
+    }
 
     // Call original func after doing all the needed setup
     bool r = BYTEHOOK_CALL_PREV(custom_SDL_InitSubSystem_Func, SDL_InitSubSystem_t, flags);
@@ -58,6 +61,7 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
 
 
 void create_sdl_hooks(bytehook_hook_all_t bytehook_hook_all_p) {
-    bytehook_stub_t stub_SDL_InitSubSystem = bytehook_hook_all_p("libSDL3.so", "SDL_InitSubSystem", &custom_SDL_InitSubSystem_Func, NULL, NULL);
+    // Don't set callee_path_name to anything besides NULL or else it won't be able to find the symbol
+    bytehook_stub_t stub_SDL_InitSubSystem = bytehook_hook_all_p(NULL, "SDL_InitSubSystem", &custom_SDL_InitSubSystem_Func, NULL, NULL);
     LOGI("Successfully initialized SDL hooks, stubs: %p, %p\n", stub_SDL_InitSubSystem);
 }
