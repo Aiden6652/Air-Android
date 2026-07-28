@@ -35,8 +35,11 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     // This is the normal for the launcher, the default in SDL is false.
     SET_DLSYM_PTR(dlopen("libSDL3.so", RTLD_NOLOAD), SDL_SetHint);
     if (SDL_SetHint_p) SDL_SetHint_p("SDL_RETURN_KEY_HIDES_IME", "true");
-    // FIXME: idk why it wont srgb, sorry
-    SDL_SetHint_p("SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER", "0");
+    // FIXME: MobileGlues has issues with passing in the proper EGL params to make this work
+    const char *egl = getenv("POJAVEXEC_EGL");
+    if (egl && strcmp(egl, "libmobileglues.so") == 0) {
+        SDL_SetHint_p("SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER", "0");
+    }
 
     // Call original func after doing all the needed setup
     bool r = BYTEHOOK_CALL_PREV(custom_SDL_InitSubSystem_Func, SDL_InitSubSystem_t, flags);
