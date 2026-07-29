@@ -171,7 +171,7 @@ public class LauncherActivity extends BaseActivity {
     };
 
     private final ExtraListener<Boolean> mLaunchGameListener = (key, value) -> {
-        if(mProgressLayout.hasProcesses()){
+        if(ProgressLayout.hasProcesses()){
             Toast.makeText(this, R.string.tasks_ongoing, Toast.LENGTH_LONG).show();
             return false;
         }
