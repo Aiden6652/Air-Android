@@ -200,3 +200,13 @@ JNIEXPORT jint JNICALL Java_net_kdt_pojavlaunch_utils_JREUtils_executeForkedBina
 }
 */
 
+
+JNIEXPORT jlong JNICALL
+Java_net_kdt_pojavlaunch_Tools_getJavaVMPointer(JNIEnv *env, jclass clazz) {
+	JavaVM *vm;
+	if ((*env)->GetJavaVM(env, &vm) != JNI_OK) {
+		return -1;
+	}
+
+	return (jlong)(uintptr_t)vm;
+}

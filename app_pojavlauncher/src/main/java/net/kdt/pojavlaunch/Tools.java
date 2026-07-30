@@ -1943,4 +1943,5 @@ public final class Tools {
          */
         public static native void initializeControllerSubsystems();
     }
+    public static native long getJavaVMPointer();
 }
