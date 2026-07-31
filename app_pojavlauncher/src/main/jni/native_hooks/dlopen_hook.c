@@ -8,7 +8,7 @@
 #include <jni.h>
 #include <stdlib.h>
 #include <string.h>
-
+// WARNING: Hooking dlopen and dlsym does not work for all devices, I don't know why, perhaps Dobby would fair better.
 typedef void *(*dlopen_func_t)(const char *, int);
 typedef void *(*dlsym_func_t)(void *, const char *);
 typedef jint (*JNI_OnLoad_t)(JavaVM *vm, void *reserved);
