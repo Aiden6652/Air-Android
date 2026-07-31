@@ -46,7 +46,7 @@ static bool custom_SDL_InitSubSystem_Func(SDL_InitFlags flags) {
     bool r = BYTEHOOK_CALL_PREV(custom_SDL_InitSubSystem_Func, SDL_InitSubSystem_t, flags);
     if (!r){
         SET_DLSYM_PTR(dlopen("libSDL3.so", RTLD_NOLOAD), SDL_GetError);
-        LOGI("Amethyst-Android: SDL_InitSubsystem Error: %s", SDL_GetError_p())
+        LOGI("Amethyst-Android: SDL_InitSubsystem Error: %s", SDL_GetError_p());
     }
     BYTEHOOK_POP_STACK();
     return r;
