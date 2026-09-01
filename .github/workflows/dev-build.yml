@@ -1,0 +1,213 @@
+name: Development build (Android)
+
+on:
+  pull_request:
+    branches-ignore:
+      - 'l10n_main'
+    types: [opened, reopened, synchronize]
+  push:
+    branches-ignore:
+      - 'l10n_main'
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: '构建类型'
+        type: choice
+        options: [debug, release]
+        default: debug
+      build_natives:
+        description: '是否用 buildscripts 重新编译 native 库（gl4es/virgl 等，很慢）'
+        type: boolean
+        default: false
+
+# 同一分支/PR 新推送取消旧的排队/运行中构建，省 runner 时间
+concurrency:
+  group: dev-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      JAVA_VERSION: '17'
+      # 项目里搜不到 ndkVersion 时用的兜底版本
+      NDK_FALLBACK: '26.3.11579264'
+      ANDROID_COMPILE_SDK: '35'
+      ANDROID_BUILD_TOOLS: '35.0.0'
+      CONFIG_CURSEFORGE_API_KEY: ${{ secrets.CONFIG_CURSEFORGE_API_KEY }}
+      # GitHub Actions 的 if 表达式不能直接引用 secrets，先用 env 中转成 true/false
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      GRADLE_OPTS: >-
+        -Dorg.gradle.daemon=false
+        -Dorg.gradle.parallel=false
+        -Dorg.gradle.jvmargs=-Xmx4g
+        -Dkotlin.incremental=false
+        -Dfile.encoding=UTF-8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Remove stale MobileGL gitlink
+        # 残留的孤立 gitlink 会让 submodule update 找不到 URL 而 exit 128
+        run: |
+          git rm --cached -f Natives/external/MobileGL 2>/dev/null || true
+          git config --remove-section submodule.Natives/external/MobileGL 2>/dev/null || true
+          git rm --cached -f Natives/external/MobileGlues 2>/dev/null || true
+          git config --remove-section submodule.Natives/external/MobileGlues 2>/dev/null || true
+
+      - name: Checkout submodules
+        env:
+          # 上游 LFS 配额用尽，跳过 smudge 免得 checkout 失败
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: git submodule update --init --recursive
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle (含依赖缓存)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Setup Android SDK / NDK
+        uses: android-actions/setup-android@v3
+
+      - name: Resolve NDK version
+        # 从 build.gradle / build.gradle.kts 里读出项目声明的 ndkVersion，
+        # 避免 workflow 写死的版本和项目不一致导致编译失败
+        run: |
+          V=$(grep -rhoP 'ndkVersion\s*=?\s*"\K[^"]+' \
+              --include='build.gradle' --include='build.gradle.kts' . 2>/dev/null | head -1)
+          if [ -z "$V" ]; then
+            V="$NDK_FALLBACK"
+            echo "::warning::未在 build.gradle 中找到 ndkVersion，使用兜底版本 $V"
+          fi
+          echo "NDK_VERSION=$V" >> "$GITHUB_ENV"
+          echo "使用 NDK 版本: $V"
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-${ANDROID_COMPILE_SDK}" \
+            "build-tools;${ANDROID_BUILD_TOOLS}" \
+            "ndk;${NDK_VERSION}"
+          sdkmanager --list_installed
+
+      - name: Build native libraries (optional)
+        # 仓库里已预编译 jniLibs 时不需要跑，默认跳过
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_natives }}
+        run: |
+          chmod +x buildscripts/*.sh
+          cd buildscripts
+          ./build-tools.sh --all
+
+      - name: Diagnose gradle layout
+        # 看看仓库根目录长啥样、gradlew 在不在、build.gradle 在哪
+        run: |
+          echo "--- repo root ---"
+          ls -la
+          echo "--- find gradlew (depth=3) ---"
+          find . -maxdepth 3 -name 'gradlew' -type f 2>/dev/null || echo "(none)"
+          echo "--- find build.gradle (depth=2) ---"
+          find . -maxdepth 2 -name 'build.gradle*' -type f 2>/dev/null || echo "(none)"
+          # 找 gradle 项目根目录（优先 settings.gradle，其次 build.gradle）
+          if [ -f settings.gradle ] || [ -f settings.gradle.kts ]; then
+            ROOT=.
+          else
+            D=$(find . -maxdepth 3 -name 'settings.gradle*' 2>/dev/null | head -1)
+            if [ -n "$D" ]; then
+              ROOT=$(dirname "$D")
+            else
+              D=$(find . -maxdepth 3 -name 'build.gradle' -type f 2>/dev/null | head -1)
+              ROOT=$( [ -n "$D" ] && dirname "$D" || echo "." )
+            fi
+          fi
+          echo "GRADLE_ROOT=$ROOT" >> "$GITHUB_ENV"
+          echo "==> gradle project root: $ROOT"
+
+      - name: Grant gradlew permission
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            echo "found gradlew in repo root"
+          else
+            echo "no gradlew in repo root, will use system gradle"
+          fi
+
+      - name: Build APK
+        run: |
+          cd "$GRADLE_ROOT"
+          BUILD_TYPE="${{ github.event_name == 'workflow_dispatch' && inputs.build_type || 'debug' }}"
+          case "$BUILD_TYPE" in
+            release) TASK=assembleRelease ;;
+            *)       TASK=assembleDebug   ;;
+          esac
+          if [ -x ./gradlew ]; then
+            CMD=./gradlew
+          else
+            CMD=gradle
+            echo "use system gradle: $(which gradle), version: $(gradle --version 2>/dev/null | head -3)"
+          fi
+          # 只想构建主模块时改成 $CMD :app_pojavlauncher:$TASK
+          $CMD $TASK --stacktrace
+
+      - name: Sign release APK
+        # 配了 keystore secrets 就自动签名，没配就跳过（产物仍是 unsigned）
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_type == 'release' && env.HAS_KEYSTORE == 'true' }}
+        env:
+          KEYSTORE: ${{ runner.temp }}/keystore.jks
+          KS_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$KEYSTORE"
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)
+          export PATH="$BT:$PATH"
+          find . -path '*/build/outputs/apk/release/*-unsigned.apk' -print0 | while IFS= read -r -d '' apk; do
+            out="${apk/-unsigned/-signed}"
+            zipalign -f -p 4 "$apk" "$out"
+            apksigner sign --ks "$KEYSTORE" --ks-key-alias "$KS_ALIAS" \
+              --ks-pass pass:"$KS_PASS" --key-pass pass:"${KEY_PASS:-$KS_PASS}" \
+              "$out"
+            apksigner verify "$out"
+            rm -f "$apk"
+          done
+
+      - name: Upload APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: com.air-devs.air-${{ github.event_name == 'workflow_dispatch' && inputs.build_type || 'debug' }}
+          path: |
+            **/build/outputs/apk/**/*.apk
+            **/build/outputs/bundle/**/*.aab
+          if-no-files-found: error
+          compression-level: 6
+
+      - name: Upload native debug symbols
+        # 等价于 iOS 的 dSYM，用于还原 native 崩溃堆栈
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AngelAuraAmethyst-native-symbols
+          path: |
+            **/build/intermediates/native_debug_symbols/**/*.so
+            **/build/outputs/native-debug-symbols/**
+          if-no-files-found: ignore
+
+      - name: Upload mapping (ProGuard/R8)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AngelAuraAmethyst-mapping
+          path: '**/build/outputs/mapping/**/mapping.txt'
+          if-no-files-found: ignore
