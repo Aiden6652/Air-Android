@@ -143,7 +143,16 @@ jobs:
             echo "no gradlew in repo root, will use system gradle"
           fi
 
+      - name: Prepare signing keystore
+        # 项目 build.gradle 的 customRelease 固定读 app_pojavlauncher/aamc_upload.jks + GPLAY_KEYSTORE_PASSWORD
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_type == 'release' && env.HAS_KEYSTORE == 'true' }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app_pojavlauncher/aamc_upload.jks
+          ls -la app_pojavlauncher/aamc_upload.jks
+
       - name: Build APK
+        env:
+          GPLAY_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           cd "$GRADLE_ROOT"
           BUILD_TYPE="${{ github.event_name == 'workflow_dispatch' && inputs.build_type || 'debug' }}"
