@@ -12,4 +12,13 @@
 
     <color name="primary_text">#FFFFFF</color>
     <color name="secondary_text">#B2B2B2</color>
+
+    <!-- Air theme -->
+    <color name="air_nav_rail">#141414</color>
+    <color name="air_card">#232323</color>
+    <color name="air_edge_blue">#5B8DEF</color>
+    <color name="air_edge_green">#27AE60</color>
+    <color name="air_edge_orange">#E67E22</color>
+    <color name="air_edge_red">#E74C3C</color>
+    <color name="air_edge_purple">#8E6CE0</color>
 </resources>

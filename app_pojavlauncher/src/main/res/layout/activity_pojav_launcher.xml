@@ -1,51 +1,85 @@
-<androidx.constraintlayout.widget.ConstraintLayout
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+    android:orientation="horizontal"
+    android:background="@color/background_app">
 
-    <com.kdt.mcgui.mcAccountSpinner
-        android:id="@+id/account_spinner"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/_52sdp"
+    <!-- Air-style left navigation rail -->
+    <LinearLayout
+        android:id="@+id/nav_rail"
+        android:layout_width="@dimen/_56sdp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:background="@drawable/air_nav_rail_bg">
 
-        android:dropDownWidth="@dimen/_250sdp"
-        android:dropDownVerticalOffset="@dimen/_52sdp"
+        <ImageButton
+            android:id="@+id/nav_home"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_56sdp"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_menu_home"
+            android:scaleType="fitCenter"
+            android:padding="@dimen/_14sdp"
+            android:contentDescription="@string/air_nav_home" />
 
-        app:layout_constraintTop_toTopOf="parent" />
+        <ImageButton
+            android:id="@+id/nav_mods"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_56sdp"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_add_modded"
+            android:scaleType="fitCenter"
+            android:padding="@dimen/_14sdp"
+            android:contentDescription="@string/air_nav_mods" />
 
-    <ImageButton
-        android:id="@+id/setting_button"
-        android:layout_width="@dimen/_52sdp"
-        android:layout_height="@dimen/_52sdp"
-        android:background="?attr/selectableItemBackground"
-        android:src="@drawable/ic_menu_settings"
-        android:scaleType="fitCenter"
-        android:paddingVertical="@dimen/_8sdp"
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <ImageButton
+            android:id="@+id/setting_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_56sdp"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_menu_settings"
+            android:scaleType="fitCenter"
+            android:padding="@dimen/_14sdp"
+            android:contentDescription="@string/air_nav_settings" />
+    </LinearLayout>
 
-    <!-- Holding most of the dynamic content -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/container_fragment"
+    <!-- Content column -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/progress_layout"
-        app:layout_constraintTop_toBottomOf="@+id/account_spinner" />
+        <com.kdt.mcgui.mcAccountSpinner
+            android:id="@+id/account_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_52sdp"
 
+            android:dropDownWidth="@dimen/_250sdp"
+            android:dropDownVerticalOffset="@dimen/_52sdp" />
 
-    <com.kdt.mcgui.ProgressLayout
-        android:id="@+id/progress_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        <!-- Holding most of the dynamic content -->
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/container_fragment"
 
-        app:layout_constraintBottom_toBottomOf="parent" />
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
+        <com.kdt.mcgui.ProgressLayout
+            android:id="@+id/progress_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

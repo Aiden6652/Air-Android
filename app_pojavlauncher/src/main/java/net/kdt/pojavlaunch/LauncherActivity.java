@@ -38,6 +38,7 @@ import net.kdt.pojavlaunch.extra.ExtraCore;
 import net.kdt.pojavlaunch.extra.ExtraListener;
 import net.kdt.pojavlaunch.fragments.MainMenuFragment;
 import net.kdt.pojavlaunch.fragments.MicrosoftLoginFragment;
+import net.kdt.pojavlaunch.fragments.SearchModFragment;
 import net.kdt.pojavlaunch.fragments.SelectAuthFragment;
 import net.kdt.pojavlaunch.lifecycle.ContextAwareDoneListener;
 import net.kdt.pojavlaunch.lifecycle.ContextExecutor;
@@ -129,6 +130,8 @@ public class LauncherActivity extends BaseActivity {
     private mcAccountSpinner mAccountSpinner;
     private FragmentContainerView mFragmentView;
     private ImageButton mSettingsButton;
+    private ImageButton mNavHomeButton;
+    private ImageButton mNavModsButton;
     private ProgressLayout mProgressLayout;
     private ProgressServiceKeeper mProgressServiceKeeper;
     private ModloaderInstallTracker mInstallTracker;
@@ -332,6 +335,15 @@ public class LauncherActivity extends BaseActivity {
         ProgressKeeper.addTaskCountListener((mProgressServiceKeeper = new ProgressServiceKeeper(this)));
 
         mSettingsButton.setOnClickListener(mSettingButtonListener);
+        mNavHomeButton = findViewById(R.id.nav_home);
+        mNavModsButton = findViewById(R.id.nav_mods);
+        mNavHomeButton.setOnClickListener(v -> Tools.backToMainMenu(this));
+        mNavModsButton.setOnClickListener(v -> {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(mFragmentView.getId());
+            if (fragment instanceof MainMenuFragment) {
+                Tools.swapFragment(this, SearchModFragment.class, SearchModFragment.TAG, null);
+            }
+        });
         ProgressKeeper.addTaskCountListener(mProgressLayout);
         ExtraCore.addExtraListener(ExtraConstants.BACK_PREFERENCE, mBackPreferenceListener);
         ExtraCore.addExtraListener(ExtraConstants.SELECT_AUTH_METHOD, mSelectAuthMethod);

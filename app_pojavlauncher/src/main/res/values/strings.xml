@@ -518,4 +518,9 @@
     <string name="import_modpack_json">Reading modpack info…</string>
     <string name="import_modpack_copy">Copying modpack file to cache… (%s MB/ %s MB)</string>
 
+    <!-- Air navigation -->
+    <string name="air_nav_home">Home</string>
+    <string name="air_nav_mods">Mods</string>
+    <string name="air_nav_settings">Settings</string>
+
 </resources>
