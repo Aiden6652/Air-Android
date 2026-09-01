@@ -65,6 +65,38 @@ jobs:
           GIT_LFS_SKIP_SMUDGE: "1"
         run: git submodule update --init --recursive
 
+      - name: Get JRE 8 (legacy runtime)
+        # 旧版本 MC（1.16 及更早）的内置运行时，结构与 AsyncAssetManager 期望一致
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: app_pojavlauncher/src/main/assets/components/jre
+          workflow_conclusion: completed
+          repo: AngelAuraMC/angelauramc-openjdk-build
+          branch: buildjre8
+          name: jre8-pojav
+
+      - name: Get JRE 25 (FCL, MC 26.x runtime)
+        # MC 26.x 需要 Java 25。FCL 的 multiarch 包结构与 NewJREUtil 的
+        # components/jre-25（version + universal.tar.xz + bin-<arch>.tar.xz）完全匹配
+        uses: dawidd6/action-download-artifact@v9
+        with:
+          workflow: build.yml
+          path: app_pojavlauncher/src/main/assets/components/jre-25
+          workflow_conclusion: completed
+          repo: FCL-Team/Android-OpenJDK-Build
+          branch: Build_JRE_25
+          name: jre25-multiarch
+
+      - name: Verify JRE components
+        run: |
+          echo "--- components/jre ---"; ls -la app_pojavlauncher/src/main/assets/components/jre
+          echo "--- components/jre-25 ---"; ls -la app_pojavlauncher/src/main/assets/components/jre-25
+          test -f app_pojavlauncher/src/main/assets/components/jre/version
+          test -f app_pojavlauncher/src/main/assets/components/jre-25/version
+          test -f app_pojavlauncher/src/main/assets/components/jre-25/universal.tar.xz
+          test -f app_pojavlauncher/src/main/assets/components/jre-25/bin-arm64.tar.xz
+
       - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
