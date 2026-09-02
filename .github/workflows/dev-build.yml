@@ -239,7 +239,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: AngelAuraAmethyst-native-symbols
+          name: Air-native-symbols
           path: |
             **/build/intermediates/native_debug_symbols/**/*.so
             **/build/outputs/native-debug-symbols/**

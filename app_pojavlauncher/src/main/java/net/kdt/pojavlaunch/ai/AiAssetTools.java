@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class AiAssetTools implements AiTool {
     private static final String API_BASE = "https://api.modrinth.com/v2";
-    private static final String USER_AGENT = "Amethyst-Android-AI-Agent/1.0 (pojav-launcher fork)";
+    private static final String USER_AGENT = "Air-Android-AI-Agent/1.0 (pojav-launcher fork)";
 
     private final String mName;
 
