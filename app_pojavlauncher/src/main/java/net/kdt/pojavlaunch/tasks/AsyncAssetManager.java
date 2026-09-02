@@ -70,14 +70,15 @@ public class AsyncAssetManager {
             try {
                 Tools.copyAssetFile(ctx, "options.txt", Tools.DIR_GAME_NEW, false);
 
-                // This is disgusting, but am lazy. We probably wont be getting any updates to
-                // controlmap till rewrite anyway so this is fiiine.
+                // Air fork: when the bundled default control layout (FCL keybinds) changes,
+                // force-replace the installed controlmap/default.json so app updates actually
+                // switch the on-screen keys instead of leaving the old layout in place.
                 try (InputStream is = ctx.getAssets().open("default.json")) {
                     String assetSha1 = new String(org.apache.commons.codec.binary.Hex.encodeHex(org.apache.commons.codec.digest.DigestUtils.sha1(is)));
-                    if (!Tools.compareSHA1(new File(Tools.CTRLDEF_FILE), assetSha1)) {
-                        Tools.copyAssetFile(ctx, "default.json", Tools.CTRLMAP_PATH, "new_default.json" , false);
-                    } else if (!new File(Tools.CTRLMAP_PATH+"/new_default.json").exists())
-                    Tools.copyAssetFile(ctx, "default.json", Tools.CTRLMAP_PATH, false);
+                    File defFile = new File(Tools.CTRLDEF_FILE);
+                    if (!defFile.exists() || !Tools.compareSHA1(defFile, assetSha1)) {
+                        Tools.copyAssetFile(ctx, "default.json", Tools.CTRLMAP_PATH, true);
+                    }
                 }
 
                 Tools.copyAssetFile(ctx, "launcher_profiles.json", Tools.DIR_GAME_NEW, false);
