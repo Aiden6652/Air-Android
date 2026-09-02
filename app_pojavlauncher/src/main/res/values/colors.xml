@@ -3,7 +3,9 @@
     <color name="control_button_color">#4CC4C4C4</color>
     <color name="control_button_pressed_color">#4D000000</color>
 
-    <color name="minebutton_color">#9649b8</color>
+    <!-- Air 主题强调色：天蓝 #429CF5（对齐 iOS 版 accentColor 默认值） -->
+    <color name="minebutton_color">#429CF5</color>
+    <color name="minebutton_color_pressed">#2F86DC</color>
     <color name="background_app">#181818</color>
     <color name="divider">@color/background_overlay</color>
     <color name="background_overlay">#464646</color>
@@ -16,7 +18,7 @@
     <!-- Air theme -->
     <color name="air_nav_rail">#141414</color>
     <color name="air_card">#232323</color>
-    <color name="air_edge_blue">#5B8DEF</color>
+    <color name="air_edge_blue">#429CF5</color>
     <color name="air_edge_green">#27AE60</color>
     <color name="air_edge_orange">#E67E22</color>
     <color name="air_edge_red">#E74C3C</color>

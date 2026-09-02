@@ -339,14 +339,19 @@ public class LauncherActivity extends BaseActivity {
         mNavHomeButton = findViewById(R.id.nav_home);
         mNavModsButton = findViewById(R.id.nav_mods);
         mNavAiButton = findViewById(R.id.nav_ai);
-        mNavHomeButton.setOnClickListener(v -> Tools.backToMainMenu(this));
-        mNavModsButton.setOnClickListener(v -> {
+        if (mNavHomeButton != null) mNavHomeButton.setOnClickListener(v -> {
+            updateNavSelection(0);
+            Tools.backToMainMenu(this);
+        });
+        if (mNavModsButton != null) mNavModsButton.setOnClickListener(v -> {
+            updateNavSelection(1);
             Fragment fragment = getSupportFragmentManager().findFragmentById(mFragmentView.getId());
             if (fragment instanceof MainMenuFragment) {
                 Tools.swapFragment(this, SearchModFragment.class, SearchModFragment.TAG, null);
             }
         });
-        mNavAiButton.setOnClickListener(v -> {
+        if (mNavAiButton != null) mNavAiButton.setOnClickListener(v -> {
+            updateNavSelection(2);
             Fragment fragment = getSupportFragmentManager().findFragmentById(mFragmentView.getId());
             if (fragment instanceof net.kdt.pojavlaunch.fragments.AIFragment) return;
             Tools.swapFragment(this, net.kdt.pojavlaunch.fragments.AIFragment.class,
@@ -367,6 +372,21 @@ public class LauncherActivity extends BaseActivity {
         mProgressLayout.observe(ProgressLayout.INSTALL_MODPACK);
         mProgressLayout.observe(ProgressLayout.AUTHENTICATE_MICROSOFT);
         mProgressLayout.observe(ProgressLayout.DOWNLOAD_VERSION_LIST);
+    }
+
+    /**
+     * Air 主题：nav rail 选中项使用天蓝强调色 #429CF5 高亮（对齐 iOS accentColor 默认值）。
+     * selected: 0=主页 1=Mods 2=AI，-1 表示无选中
+     */
+    private void updateNavSelection(int selected) {
+        int accent = 0xFF429CF5;
+        int normal = 0xFFB2B2B2;
+        if (mNavHomeButton != null)
+            mNavHomeButton.setColorFilter(selected == 0 ? accent : normal);
+        if (mNavModsButton != null)
+            mNavModsButton.setColorFilter(selected == 1 ? accent : normal);
+        if (mNavAiButton != null)
+            mNavAiButton.setColorFilter(selected == 2 ? accent : normal);
     }
 
     @Override
