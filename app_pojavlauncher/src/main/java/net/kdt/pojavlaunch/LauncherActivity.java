@@ -132,6 +132,7 @@ public class LauncherActivity extends BaseActivity {
     private ImageButton mSettingsButton;
     private ImageButton mNavHomeButton;
     private ImageButton mNavModsButton;
+    private ImageButton mNavAiButton;
     private ProgressLayout mProgressLayout;
     private ProgressServiceKeeper mProgressServiceKeeper;
     private ModloaderInstallTracker mInstallTracker;
@@ -337,12 +338,19 @@ public class LauncherActivity extends BaseActivity {
         mSettingsButton.setOnClickListener(mSettingButtonListener);
         mNavHomeButton = findViewById(R.id.nav_home);
         mNavModsButton = findViewById(R.id.nav_mods);
+        mNavAiButton = findViewById(R.id.nav_ai);
         mNavHomeButton.setOnClickListener(v -> Tools.backToMainMenu(this));
         mNavModsButton.setOnClickListener(v -> {
             Fragment fragment = getSupportFragmentManager().findFragmentById(mFragmentView.getId());
             if (fragment instanceof MainMenuFragment) {
                 Tools.swapFragment(this, SearchModFragment.class, SearchModFragment.TAG, null);
             }
+        });
+        mNavAiButton.setOnClickListener(v -> {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(mFragmentView.getId());
+            if (fragment instanceof net.kdt.pojavlaunch.fragments.AIFragment) return;
+            Tools.swapFragment(this, net.kdt.pojavlaunch.fragments.AIFragment.class,
+                    net.kdt.pojavlaunch.fragments.AIFragment.TAG, null);
         });
         ProgressKeeper.addTaskCountListener(mProgressLayout);
         ExtraCore.addExtraListener(ExtraConstants.BACK_PREFERENCE, mBackPreferenceListener);

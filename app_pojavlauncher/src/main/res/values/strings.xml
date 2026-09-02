@@ -521,6 +521,30 @@
     <!-- Air navigation -->
     <string name="air_nav_home">Home</string>
     <string name="air_nav_mods">Mods</string>
+    <string name="air_nav_ai">AI Assistant</string>
     <string name="air_nav_settings">Settings</string>
+
+    <!-- AI Assistant -->
+    <string name="ai_title">AI 助手</string>
+    <string name="ai_new_session">New chat</string>
+    <string name="ai_input_hint">给 Air 发送消息…</string>
+    <string name="ai_send">Send</string>
+    <string name="ai_ongoing">上一条回复尚未完成，请先点停止</string>
+    <string name="ai_request_failed">请求失败</string>
+    <string name="ai_no_provider">未配置 AI 提供商（点击配置）</string>
+    <string name="ai_no_provider_title">尚未配置 AI 提供商</string>
+    <string name="ai_no_provider_subtitle">点击下方按钮配置 API 服务</string>
+    <string name="ai_empty_title">和 AI 助手打个招呼吧</string>
+    <string name="ai_empty_subtitle">向 Air 询问启动器问题或 Minecraft 知识</string>
+    <string name="ai_configure">去配置</string>
+    <string name="ai_provider_config">AI 提供商配置</string>
+    <string name="ai_save">保存</string>
+    <string name="ai_test">测试</string>
+    <string name="ai_test_ok">连接成功</string>
+    <string name="ai_testing">正在测试连接…</string>
+    <string name="ai_config_incomplete">请先填写 API 地址和模型</string>
+    <string name="ai_saved">已保存</string>
+    <string name="ai_safety_mode">安全模式</string>
+    <string name="ai_safety_fmt">安全模式：%1$s</string>
 
 </resources>

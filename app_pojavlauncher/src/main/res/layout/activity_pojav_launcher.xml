@@ -37,6 +37,16 @@
             android:padding="@dimen/_14sdp"
             android:contentDescription="@string/air_nav_mods" />
 
+        <ImageButton
+            android:id="@+id/nav_ai"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_56sdp"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_ai_sparkles"
+            android:scaleType="fitCenter"
+            android:padding="@dimen/_14sdp"
+            android:contentDescription="@string/air_nav_ai" />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="0dp"

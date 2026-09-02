@@ -27,9 +27,17 @@ import net.kdt.pojavlaunch.utils.FileUtils;
 public class PojavApplication extends Application {
 	public static final String CRASH_REPORT_TAG = "PojavCrashReport";
 	public static final ExecutorService sExecutorService = new ThreadPoolExecutor(4, 4, 500, TimeUnit.MILLISECONDS,  new LinkedBlockingQueue<>());
-	
+
+	private static Application sInstance;
+
+	/** 全局应用上下文（供 AI 模块等无 Context 场景使用） */
+	public static Context getAppContext() {
+		return sInstance;
+	}
+
 	@Override
 	public void onCreate() {
+		sInstance = this;
 		ContextExecutor.setApplication(this);
 		Thread.setDefaultUncaughtExceptionHandler((thread, th) -> {
 			boolean storagePermAllowed = (Build.VERSION.SDK_INT < 23 || Build.VERSION.SDK_INT >= 29 ||
